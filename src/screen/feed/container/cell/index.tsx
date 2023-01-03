@@ -121,6 +121,7 @@ function CellList({
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     width: Constant.screenWidth,
