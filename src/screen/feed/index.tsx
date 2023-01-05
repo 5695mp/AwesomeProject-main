@@ -10,7 +10,8 @@ const ListData = React.memo((props: any) => {
 
 export default function FeedScreen() {
   const flatListRef: any = useRef();
-  const [listData] = useState(Data);
+  const [listData, setListData] = useState(Data);
+  const [isUpdatedata, setIsUpdateData] = useState(false);
 
   const scrollListTo = (index: number, animated = true) => {
     if (index === listData.length) {
@@ -29,7 +30,10 @@ export default function FeedScreen() {
         key={index}
         index={index}
         {...item}
-        onPressEffect={index => {
+        onPressEffect={(index: any, status: boolean) => {
+          listData[index].isLike = status;
+          setIsUpdateData(!isUpdatedata);
+          setListData(listData);
           scrollListTo(index + 1);
         }}
       />
@@ -44,6 +48,7 @@ export default function FeedScreen() {
         style={stylesGlobal.flexContainer}
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
+        refreshing={isUpdatedata}
         decelerationRate="fast"
         pagingEnabled
         scrollEventThrottle={2}

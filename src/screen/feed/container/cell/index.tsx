@@ -17,8 +17,9 @@ interface ListData {
   km: number;
   per: number;
   interested: any[];
-  onPressEffect?: (value: number) => void;
+  onPressEffect?: (value: number, status: boolean) => void;
   index: number;
+  isLike?: boolean;
 }
 
 function CellList({
@@ -29,6 +30,7 @@ function CellList({
   interested,
   onPressEffect,
   index,
+  isLike,
 }: ListData) {
   const {
     container,
@@ -50,7 +52,24 @@ function CellList({
     textPer,
     avtarImagePlaceholder,
     perValueText,
+    likeColor,
   } = styles;
+  let backCount = 0;
+
+  const onPressDoubleClick = () => {
+    backCount++;
+    if (backCount === 2) {
+      backCount = 0;
+      clearTimeout(this.backTimer);
+      if (onPressEffect) {
+        onPressEffect(index, true);
+      }
+    } else {
+      this.backTimer = setTimeout(() => {
+        backCount = 0;
+      }, 500);
+    }
+  };
 
   const renderLikeOrUnlike = () => {
     return (
@@ -58,7 +77,7 @@ function CellList({
         <TouchableOpacity
           onPress={() => {
             if (onPressEffect) {
-              onPressEffect(index);
+              onPressEffect(index, false);
             }
           }}
           style={unLikeContainer}>
@@ -67,10 +86,10 @@ function CellList({
         <TouchableOpacity
           onPress={() => {
             if (onPressEffect) {
-              onPressEffect(index);
+              onPressEffect(index, true);
             }
           }}
-          style={[unLikeContainer, likeContainer]}>
+          style={[unLikeContainer, likeContainer, isLike ? likeColor : null]}>
           <Image style={bottomImages} source={{uri: 'icon_like'}} />
         </TouchableOpacity>
       </View>
@@ -79,48 +98,54 @@ function CellList({
 
   return (
     <ScrollView nestedScrollEnabled style={container}>
-      <View style={profileMainContainer}>
-        <View style={profileContainer}>
-          <View style={profilePicContainer}>
-            <Text style={avtarImagePlaceholder}>Avatar</Text>
-          </View>
-          <View style={userContainer}>
-            <View style={userSubContainer}>
-              <Text style={textTitleBig}>{userName}</Text>
-              <Text style={textDetail}>{`Age ${age}`}</Text>
-              <Text style={textDetailKM}>{`${km} KM away`}</Text>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={onPressDoubleClick}
+        style={profileMainContainer}>
+        {/* <View style={profileMainContainer}> */}
+        <View>
+          <View style={profileContainer}>
+            <View style={profilePicContainer}>
+              <Text style={avtarImagePlaceholder}>Avatar</Text>
             </View>
-            <View style={profilePictureContainer}>
-              <Text style={avtarImagePlaceholder}>{'Profile\nPicture'}</Text>
+            <View style={userContainer}>
+              <View style={userSubContainer}>
+                <Text style={textTitleBig}>{userName}</Text>
+                <Text style={textDetail}>{`Age ${age}`}</Text>
+                <Text style={textDetailKM}>{`${km} KM away`}</Text>
+              </View>
+              <View style={profilePictureContainer}>
+                <Text style={avtarImagePlaceholder}>{'Profile\nPicture'}</Text>
+              </View>
+            </View>
+            <View style={progressBarContainer}>
+              <AnimatedCircularProgress
+                size={60}
+                width={12}
+                fill={per || 0}
+                rotation={0}
+                tintColor={Constant.progressBarFill}
+                backgroundColor={Constant.progressBarUnFill}
+              />
+              <View style={perValueText}>
+                <Text style={textPer}>{per || ''}</Text>
+              </View>
             </View>
           </View>
-          <View style={progressBarContainer}>
-            <AnimatedCircularProgress
-              size={60}
-              width={12}
-              fill={per || 0}
-              rotation={0}
-              tintColor={Constant.progressBarFill}
-              backgroundColor={Constant.progressBarUnFill}
+          <View style={separatorLine} />
+          {interested?.map(item => (
+            <InterestList
+              data={item?.option}
+              isImageDetail={item?.isImageDetail}
             />
-            <View style={perValueText}>
-              <Text style={textPer}>{per || ''}</Text>
-            </View>
-          </View>
+          ))}
+          {renderLikeOrUnlike()}
+          {/* </View> */}
         </View>
-        <View style={separatorLine} />
-        {interested?.map(item => (
-          <InterestList
-            data={item?.option}
-            isImageDetail={item?.isImageDetail}
-          />
-        ))}
-        {renderLikeOrUnlike()}
-      </View>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -212,6 +237,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   likeContainer: {marginLeft: 18},
+  likeColor: {backgroundColor: 'red'},
   bottomImages: {width: 30, height: 30, resizeMode: 'contain'},
   userContainer: {flexDirection: 'row', marginTop: 11, marginHorizontal: 24},
   userSubContainer: {flex: 1, justifyContent: 'center'},
