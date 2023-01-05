@@ -55,17 +55,18 @@ function CellList({
     likeColor,
   } = styles;
   let backCount = 0;
+  let backTimer = null;
 
   const onPressDoubleClick = () => {
     backCount++;
     if (backCount === 2) {
       backCount = 0;
-      clearTimeout(this.backTimer);
+      clearTimeout(backTimer);
       if (onPressEffect) {
         onPressEffect(index, true);
       }
     } else {
-      this.backTimer = setTimeout(() => {
+      backTimer = setTimeout(() => {
         backCount = 0;
       }, 500);
     }
